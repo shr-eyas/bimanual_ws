@@ -1,0 +1,16 @@
+# Build and development directories
+devel/
+build/
+logs/
+log/
+.catkin_tools/
+
+# Editor and IDE files
+.vscode/
+*.swp
+*~
+*.bak
+
+# Log and temp files
+*.log
+*.tmp
