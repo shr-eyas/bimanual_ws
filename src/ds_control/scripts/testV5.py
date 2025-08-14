@@ -24,7 +24,7 @@ class TestController:
         # ————————————————————————————————————————————————
 
         # Twist log
-        log_path = '/home/iitgn-robotics/bimanual_ws/src/ds_control/data/twist_log.csv'
+        log_path = '/home/iitgn-robotics/ds_yash/bimanual_ws/src/ds_control/data/twist_log_1.csv'
         self._twist_file = open(log_path, 'w')
         header = ['time']
         for agent in ['heal','fr3']:
@@ -36,7 +36,7 @@ class TestController:
         rospy.on_shutdown(self._close_twist_log)
         
         # Joint log
-        joint_log_path = '/home/iitgn-robotics/bimanual_ws/src/ds_control/data/joint_log.csv'
+        joint_log_path = '/home/iitgn-robotics/ds_yash/bimanual_ws/src/ds_control/data/joint_log_1.csv'
         self._joint_log_file = open(joint_log_path, 'w')
         self._joint_log_lock = threading.Lock()
         joint_header = ['time']
@@ -76,36 +76,20 @@ class TestController:
         self.heal_state.update_from_pose(heal_msg)
         rospy.loginfo("Received initial EE poses.")
         
-        # Rest poses
-        self.x_rest_fr3,  self.q_rest_fr3  = self.fr3_state.ee_pos.copy(),  self.fr3_state.ee_ori.copy()
-        self.x_rest_heal, self.q_rest_heal = self.heal_state.ee_pos.copy(), self.heal_state.ee_ori.copy()
+        self.x_rest_fr3,    self.q_rest_fr3    = self.fr3_state.ee_pos.copy(),  self.fr3_state.ee_ori.copy()
+        self.x_rest_heal,   self.q_rest_heal   = self.heal_state.ee_pos.copy(), self.heal_state.ee_ori.copy()
         
-        # 1) Pick poses
-        self.x_pick_fr3,  self.q_pick_fr3   = (
-            np.array([0.51887, -0.01929, 0.08539]),
-            np.array([1.0, 0.0, 0.0, 0.0])
-        )
-        self.x_pick_heal, self.q_pick_heal  = (
-            np.array([-0.11914, 0.55073, 0.28001]),
-            np.array([0.01850, 0.00166, 0.13432, 0.99076])
-        )
+        # 1) Pick poses:
+        self.x_pick_fr3,    self.q_pick_fr3     = np.array([0.518871485875372, -0.01929494859305955, 0.08539020620845625]), np.array([1.0, 0.0, 0.0, 0.0])
+        self.x_pick_heal,   self.q_pick_heal    = np.array([-0.11913892083802295, 0.5507251308925488, 0.28001017064576156]), np.array([0.0185024957031101, 0.0016630467873368553, 0.13432478086842833, 0.9907632134737283])
         
-        # 2) Assembly poses
-        self.x_assembly_fr3,  self.q_assembly_fr3  = (
-            np.array([0.26402, -0.67823, 0.27446]),
-            np.array([0.48675, 0.50847, -0.50654, 0.49796])
-        )
-        self.x_assembly_heal, self.q_assembly_heal = (
-            np.array([-0.30, 0.26809, 0.50644]),
-            np.array([0.01850, 0.00166, 0.13432, 0.99076])
-        )
+        # 2) Assembly poses:
+        self.x_assembly_fr3,    self.q_assembly_fr3     = np.array([ 0.426688, -0.694639 , 0.422938]), np.array([ 0.488407 , 0.48911,  -0.506527,  0.515423])
+        self.x_assembly_heal,   self.q_assembly_heal    = np.array([-0.3,0.44775823462306896,0.41869831600162616]), np.array([-0.10123182765431753 ,0.7080480116925151, -0.030799968402897986 ,0.6981915869977401])
         
-        # 3) Final heal-only pose
-        self.x_final_fr3,    self.q_final_fr3    = self.x_assembly_fr3.copy(), self.q_assembly_fr3.copy()
-        self.x_final_heal,   self.q_final_heal   = (
-            np.array([-0.492275, 0.26809, 0.50644]),
-            np.array([0.01850, 0.00166, 0.13432, 0.99076])
-        )
+        # 3) Final heal-only pose:
+        self.x_final_fr3,   self.q_final_fr3   = self.x_assembly_fr3.copy(), self.q_assembly_fr3.copy()
+        self.x_final_heal, self.q_final_heal = np.array([-0.4513943275488582,0.44775823462306896,0.41869831600162616]), np.array([-0.10123182765431753 ,0.7080480116925151, -0.030799968402897986 ,0.6981915869977401])
         
         self.pos_thresh = 0.00075
         self.ori_thresh = 0.01

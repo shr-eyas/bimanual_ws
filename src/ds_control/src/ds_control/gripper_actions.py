@@ -70,10 +70,10 @@ if __name__ == "__main__":
         rospy.init_node("gripper_controller", anonymous=True)
 
         fr3_gripper = FrankaGripperSimpleController()
-        fr3_gripper.close_gripper(width=0.017, effort=100)
+        fr3_gripper.open_gripper(width=0.08, effort=10)
 
-        heal_gripper = HealGripperSimpleController()
-        heal_gripper.close_gripper(grasp_force=100)
+        # heal_gripper = HealGripperSimpleController()
+        # heal_gripper.close_gripper(grasp_force=100)
 
     except rospy.ROSInterruptException:
         pass

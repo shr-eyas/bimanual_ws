@@ -7,10 +7,10 @@ from std_msgs.msg import Bool
 from geometry_msgs.msg import Pose, PoseStamped
 from controller_manager_msgs.srv import SwitchController, SwitchControllerRequest, LoadController
 
-from ds_control.robot_state   import RobotState
-from ds_control.kdl_ik_solver import DLSIKSolver
-from ds_control.ds_coordination import DSCoordinationFramework
-from ds_control.dls_velocity  import DLSVelocityCommander
+from src.ds_control.robot_state   import RobotState
+from src.ds_control.kdl_ik_solver import DLSIKSolver
+from src.ds_control.ds_coordination import DSCoordinationFramework
+from src.ds_control.dls_velocity  import DLSVelocityCommander
 
 class TestController:
     def __init__(self):

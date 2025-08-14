@@ -31,7 +31,7 @@ class DLSVelocityCommander:
     ik_solver : DLSIKSolver
         Computes joint velocities from a 6D twist.
     ds : callable[[], np.ndarray]
-        Zero-arg function returning a 6-ector twist.
+        Zero-arg function returning a 6-vector twist.
     pub : rospy.Publisher
         Publishes Float64MultiArray of joint velocities.
     """

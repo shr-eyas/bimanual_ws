@@ -4,12 +4,15 @@ import rospy
 import numpy as np
 import torch
 from sensor_msgs.msg import JointState
+import sys
+sys.path.append("/home/iitgn-robotics/ds_yash/bimanual_ws/src/snap_detector/src")
+
 from std_msgs.msg import Bool
 from snap_detector.snapnet import SnapDetectorNet
 
 # === Config ===
-WINDOW_SIZE = 30
-THRESHOLD = 0.3
+WINDOW_SIZE = 14
+THRESHOLD = 0.2
 JOINT_DIM = 7
 
 MODEL_PATH = "/home/iitgn-robotics/bimanual_ws/src/snap_detector/models/attention_model_newer.pt"
@@ -29,7 +32,9 @@ class SnapDetector:
 
         rospy.Subscriber("fr3/franka_state_controller/joint_states", JointState, self.joint_callback)
         self.pub = rospy.Publisher("/snap", Bool, queue_size=1)
-        rospy.loginfo("Snap Detector Node Initialized")
+        # rospy.loginfo("Snap Detector Node Initialized")
+        
+        print(f"Snap Detection Threshold: {THRESHOLD}")
 
     def normalize(self, v):
         return (v - self.vmin) / (self.vmax - self.vmin + 1e-8)
@@ -50,10 +55,10 @@ class SnapDetector:
                 prob = torch.sigmoid(self.model(window_tensor)).item()
                 is_snap = prob >= THRESHOLD
                 self.pub.publish(Bool(data=is_snap))
-                """
-                Debug:
+
+                #Debug:
                 rospy.loginfo(f"Snap Prob: {prob:.3f} → {'SNAP' if is_snap else 'No Snap'}")
-                """
+     
                 
 def main():
     rospy.init_node("snap_detector_node")

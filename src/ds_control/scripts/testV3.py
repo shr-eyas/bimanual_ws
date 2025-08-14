@@ -17,7 +17,7 @@ class TestController:
         
         rospy.init_node('test', anonymous=True)
         
-        log_path = '/home/iitgn-robotics/bimanual_ws/src/ds_control/data/twist_log.csv'
+        log_path = '/home/iitgn-robotics/ds_yash/bimanual_ws/src/ds_control/data/twist_log.csv'
         self._twist_file = open(log_path, 'w')
         header = ['time']
         for agent in ['heal','fr3']:
@@ -29,7 +29,7 @@ class TestController:
         rospy.on_shutdown(self._close_twist_log)
         
         # Joint log setup
-        joint_log_path = '/home/iitgn-robotics/bimanual_ws/src/ds_control/data/joint_log.csv'
+        joint_log_path = '/home/iitgn-robotics/ds_yash/bimanual_ws/src/ds_control/data/joint_log.csv'
         self._joint_log_file = open(joint_log_path, 'w')
         self._joint_log_lock = threading.Lock()
         joint_header = ['time']
@@ -73,17 +73,21 @@ class TestController:
         self.x_rest_fr3,    self.q_rest_fr3    = self.fr3_state.ee_pos.copy(),  self.fr3_state.ee_ori.copy()
         self.x_rest_heal,   self.q_rest_heal   = self.heal_state.ee_pos.copy(), self.heal_state.ee_ori.copy()
         
+        # 0) Before Pick poses:
+        self.x_pick_fr3_b,    self.q_pick_fr3_b     = np.array([0.514521,-0.252241, 0.21]), np.array([ 0.999622,  0.024782,  0.011864, 0.000831])
+        self.x_pick_heal_b,   self.q_pick_heal_b    = np.array([-0.26432285244070264, 0.5719909757730203 ,0.25]), np.array([-0.03025622214135188, 0.030867830557301655, 0.25859643496817486, 0.9650179386312825])
+        
         # 1) Pick poses:
-        self.x_pick_fr3,    self.q_pick_fr3     = np.array([0.518871485875372, -0.01929494859305955, 0.08539020620845625]), np.array([1.0, 0.0, 0.0, 0.0])
-        self.x_pick_heal,   self.q_pick_heal    = np.array([-0.11913892083802295, 0.5507251308925488, 0.28001017064576156]), np.array([0.0185024957031101, 0.0016630467873368553, 0.13432478086842833, 0.9907632134737283])
+        self.x_pick_fr3,    self.q_pick_fr3     = np.array([0.514521,-0.252241, 0.165841]), np.array([ 0.999622,  0.024782,  0.011864, 0.000831])
+        self.x_pick_heal,   self.q_pick_heal    = np.array([-0.26432285244070264, 0.5719909757730203 ,0.20508361686007825]), np.array([-0.03025622214135188, 0.030867830557301655, 0.25859643496817486, 0.9650179386312825])
         
         # 2) Assembly poses:
-        self.x_assembly_fr3,    self.q_assembly_fr3     = np.array([0.26402212918680357, -0.6782257839005315, 0.27446391521651364]), np.array([0.4867486712693639, 0.5084656453604429, -0.5065350385207734, 0.497956497353389])
-        self.x_assembly_heal,   self.q_assembly_heal    = np.array([-0.30, 0.2680900760533318, 0.5064363865245503]), np.array([0.0185024957031101, 0.0016630467873368553, 0.13432478086842833, 0.9907632134737283])
+        self.x_assembly_fr3,    self.q_assembly_fr3     = np.array([0.426361, -0.721674, 0.420954]), np.array([0.480514, 0.548639, -0.493223, 0.474166])
+        self.x_assembly_heal,   self.q_assembly_heal    = np.array([-0.3, 0.4484379455390496, 0.41449499125848754]), np.array([-0.10345417287658103, 0.7095098836010515, -0.032842406583131464 ,0.6962861017690021])
         
         # 3) Final heal-only pose:
         self.x_final_fr3,   self.q_final_fr3   = self.x_assembly_fr3.copy(), self.q_assembly_fr3.copy()
-        self.x_final_heal, self.q_final_heal = np.array([-0.492275, 0.2680900760533318, 0.5064363865245503]), np.array([0.0185024957031101, 0.0016630467873368553, 0.13432478086842833, 0.9907632134737283])
+        self.x_final_heal, self.q_final_heal = np.array([-0.4235810557710056, 0.4484379455390496, 0.41449499125848754]), np.array([-0.10345417287658103, 0.7095098836010515, -0.032842406583131464 ,0.6962861017690021])
         
         self.pos_thresh = 0.00075   
         self.ori_thresh = 0.01   
@@ -127,19 +131,26 @@ class TestController:
         """
         if self.phase == 1:
             x1 = [self.x_rest_heal,    self.x_rest_fr3]
-            x2 = [self.x_pick_heal,    self.x_pick_fr3]
+            x2 = [self.x_pick_heal_b,    self.x_pick_fr3_b]
             q1 = [self.q_rest_heal,    self.q_rest_fr3]
+            q2 = [self.q_pick_heal_b,    self.q_pick_fr3_b]
+            kappa = 1.0
+            
+        elif self.phase == 2:
+            x1 = [self.x_pick_heal_b,    self.x_pick_fr3_b]
+            x2 = [self.x_pick_heal,    self.x_pick_fr3]
+            q1 = [self.q_pick_heal_b,    self.q_pick_fr3_b]
             q2 = [self.q_pick_heal,    self.q_pick_fr3]
             kappa = 1.0
 
-        elif self.phase == 2:
+        elif self.phase == 3:
             x1 = [self.x_pick_heal,    self.x_pick_fr3]
             x2 = [self.x_assembly_heal,self.x_assembly_fr3]
             q1 = [self.q_pick_heal,    self.q_pick_fr3]
             q2 = [self.q_assembly_heal,self.q_assembly_fr3]
             kappa = 1.0
 
-        elif self.phase == 3:
+        elif self.phase == 4:
             x1 = [self.x_assembly_heal,self.x_assembly_fr3]
             x2 = [self.x_final_heal,   self.x_final_fr3]
             q1 = [self.q_assembly_heal,self.q_assembly_fr3]
@@ -172,10 +183,12 @@ class TestController:
         Called at 10 Hz: check each arm against its current phase target.
         """
         if self.phase == 1:
-            xt, qt = [self.x_pick_heal, self.x_pick_fr3], [self.q_pick_heal, self.q_pick_fr3]
+            xt, qt = [self.x_pick_heal_b, self.x_pick_fr3_b], [self.q_pick_heal_b, self.q_pick_fr3_b]
         elif self.phase == 2:
-            xt, qt = [self.x_assembly_heal, self.x_assembly_fr3], [self.q_assembly_heal, self.q_assembly_fr3]
+            xt, qt = [self.x_pick_heal, self.x_pick_fr3], [self.q_pick_heal, self.q_pick_fr3]
         elif self.phase == 3:
+            xt, qt = [self.x_assembly_heal, self.x_assembly_fr3], [self.q_assembly_heal, self.q_assembly_fr3]
+        elif self.phase == 4:
             xt, qt = [self.x_final_heal,    self.x_final_fr3],   [self.q_final_heal,    self.q_final_fr3]
         else:
             return
@@ -196,7 +209,7 @@ class TestController:
 
         if self.heal_arrived and self.fr3_arrived:
             self.phase += 1
-            if self.phase <= 3:
+            if self.phase <= 4:
                 self._setup_phase()
 
     def twist_fn(self, index):

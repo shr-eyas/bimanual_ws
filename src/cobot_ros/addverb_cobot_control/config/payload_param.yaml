@@ -1,6 +1,6 @@
 # payload properties
 # flag to indicate payload attachment status [possible values : true/false]
-payload_attached: true
+payload_attached: false
 # integer representing which gripper is attached [possible values : @todo]
 gripper_type: 1
 # mass of payload in kg   
